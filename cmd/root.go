@@ -311,6 +311,12 @@ func run(cmd *Command) error {
 	// run server in background
 	srvErr := make(chan error)
 	go func() {
+		if cmd.cfg.Stdio {
+			err = s.ServeStdio(ctx, cmd.inStream, cmd.outStream)
+			if err != nil {
+				srvErr <- err
+			}
+		}
 		defer close(srvErr)
 		if cmd.cfg.Stdio {
 			err = s.ServeStdio(ctx, cmd.inStream, cmd.outStream)
