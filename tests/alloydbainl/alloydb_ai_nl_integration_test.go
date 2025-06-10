@@ -118,7 +118,7 @@ func runAiNlToolGetTest(t *testing.T) {
 						map[string]any{
 							"name":        "question",
 							"type":        "string",
-							"default":     nil,
+							"required":    true,
 							"description": "The natural language question to ask.",
 							"authSources": []any{},
 						},

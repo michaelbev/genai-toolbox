@@ -56,7 +56,7 @@ func TestParseFromYamlCouchbase(t *testing.T) {
 					Description:  "some tool description",
 					Statement:    "select * from hotel WHERE name = $hotel;\n",
 					Parameters: []tools.Parameter{
-						tools.NewStringParameter("hotel", nil, "hotel parameter description"),
+						tools.NewStringParameter("hotel", "hotel parameter description"),
 					},
 				},
 			},
