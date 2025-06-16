@@ -119,17 +119,17 @@ type Tool struct {
 
 func (t Tool) Invoke(ctx context.Context, params tools.ParamValues) ([]any, error) {
 	namedArgs := make([]bigqueryapi.QueryParameter, 0, len(params))
-	paramsMap := params.AsReversedMap()
-	for _, v := range params.AsSlice() {
-		paramName := paramsMap[v]
-		if strings.Contains(t.Statement, "@"+paramName) {
+	paramNames, paramValues := params.AsNameAndValueSlices()
+	for i, name := range paramNames {
+		value := paramValues[i]
+		if strings.Contains(t.Statement, "@"+name) {
 			namedArgs = append(namedArgs, bigqueryapi.QueryParameter{
-				Name:  paramName,
-				Value: v,
+				Name:  name,
+				Value: value,
 			})
 		} else {
 			namedArgs = append(namedArgs, bigqueryapi.QueryParameter{
-				Value: v,
+				Value: value,
 			})
 		}
 	}
