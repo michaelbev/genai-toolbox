@@ -123,14 +123,15 @@ func (t Tool) Invoke(ctx context.Context, params tools.ParamValues) ([]any, erro
 
 	for i, name := range paramNames {
 		value := paramValues[i]
-		switch vType := value.(type) {
 
 		// BigQuery's QueryParameter only accepts typed slices as input
 		// This checks if the param is an array.
 		// If yes, convert []any to typed slice (e.g []string, []int)
+		switch vType := value.(type) {
 		case []any:
 			var itemType string
 			for _, p := range t.Parameters {
+				// iterate through parameters to get array's item type
 				if name == p.GetName() {
 					itemType = p.McpManifest().Items.Type
 				}
