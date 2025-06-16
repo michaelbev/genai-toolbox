@@ -120,8 +120,65 @@ type Tool struct {
 func (t Tool) Invoke(ctx context.Context, params tools.ParamValues) ([]any, error) {
 	namedArgs := make([]bigqueryapi.QueryParameter, 0, len(params))
 	paramNames, paramValues := params.AsNameAndValueSlices()
+
 	for i, name := range paramNames {
 		value := paramValues[i]
+		switch vType := value.(type) {
+
+		// BigQuery's QueryParameter only accepts typed slices as input
+		// This checks if the param is an array.
+		// If yes, convert []any to typed slice (e.g []string, []int)
+		case []any:
+			var itemType string
+			for _, p := range t.Parameters {
+				if name == p.GetName() {
+					itemType = p.McpManifest().Items.Type
+				}
+			}
+			switch itemType {
+			case "string":
+				typedSlice := make([]string, len(vType))
+				for j, item := range value.([]any) {
+					if s, ok := item.(string); ok {
+						typedSlice[j] = s
+					} else {
+						return nil, fmt.Errorf("parameter '%s': expected item at index %d to be string, got %T", name, j, item)
+					}
+				}
+				value = typedSlice
+			case "integer":
+				typedSlice := make([]int64, len(vType))
+				for j, item := range value.([]any) {
+					if i, ok := item.(int); ok {
+						typedSlice[j] = int64(i)
+					} else {
+						return nil, fmt.Errorf("parameter '%s': expected item at index %d to be integer, got %T", name, j, item)
+					}
+				}
+				value = typedSlice
+			case "float":
+				typedSlice := make([]float64, len(vType))
+				for j, item := range value.([]any) {
+					if f, ok := item.(float64); ok {
+						typedSlice[j] = f
+					} else {
+						return nil, fmt.Errorf("parameter '%s': expected item at index %d to be float, got %T", name, j, item)
+					}
+				}
+				value = typedSlice
+			case "boolean":
+				typedSlice := make([]bool, len(vType))
+				for j, item := range value.([]any) {
+					if b, ok := item.(bool); ok {
+						typedSlice[j] = b
+					} else {
+						return nil, fmt.Errorf("parameter '%s': expected item at index %d to be boolean, got %T", name, j, item)
+					}
+				}
+				value = typedSlice
+			}
+		}
+
 		if strings.Contains(t.Statement, "@"+name) {
 			namedArgs = append(namedArgs, bigqueryapi.QueryParameter{
 				Name:  name,
